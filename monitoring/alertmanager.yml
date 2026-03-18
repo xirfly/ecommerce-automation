@@ -1,0 +1,58 @@
+# AlertManager配置
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alerts@example.com'
+  smtp_auth_username: 'alerts@example.com'
+  smtp_auth_password: 'your_password'
+
+# 告警路由
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+  routes:
+    # 严重告警立即发送
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+    # 警告级别告警
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+
+# 接收器配置
+receivers:
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://localhost:8000/api/v1/alerts/webhook'
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'admin@example.com'
+        headers:
+          Subject: '[CRITICAL] {{ .GroupLabels.alertname }}'
+    webhook_configs:
+      - url: 'http://localhost:8000/api/v1/alerts/webhook'
+    # 飞书告警（可选）
+    # webhook_configs:
+    #   - url: 'https://open.feishu.cn/open-apis/bot/v2/hook/your-webhook-key'
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'ops@example.com'
+        headers:
+          Subject: '[WARNING] {{ .GroupLabels.alertname }}'
+
+# 抑制规则
+inhibit_rules:
+  # 如果服务宕机，抑制该服务的其他告警
+  - source_match:
+      severity: 'critical'
+      alertname: 'ServiceDown'
+    target_match:
+      severity: 'warning'
+    equal: ['instance']

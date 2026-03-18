@@ -1,0 +1,166 @@
+{
+  "dashboard": {
+    "title": "电商自动化系统 - 系统概览",
+    "tags": ["ecommerce", "overview"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "任务执行统计",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(task_total[5m])) * 300",
+            "legendFormat": "总任务数"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "任务成功率",
+        "type": "gauge",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(task_total{status=\"success\"}[5m])) / sum(rate(task_total[5m])) * 100",
+            "legendFormat": "成功率 %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 95, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "API 请求速率",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "legendFormat": "请求/秒"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "活跃连接数",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "http_active_connections",
+            "legendFormat": "连接数"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "任务执行趋势",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "sum(rate(task_total{status=\"success\"}[5m])) by (task_type)",
+            "legendFormat": "{{task_type}} - 成功"
+          },
+          {
+            "expr": "sum(rate(task_total{status=\"failed\"}[5m])) by (task_type)",
+            "legendFormat": "{{task_type}} - 失败"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "API 响应时间 (P95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (endpoint, le))",
+            "legendFormat": "{{endpoint}}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Agent 执行统计",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "targets": [
+          {
+            "expr": "sum(rate(agent_executions_total[5m])) by (agent_name, status)",
+            "legendFormat": "{{agent_name}} - {{status}}"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "数据库查询时间 (P95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (operation, le))",
+            "legendFormat": "{{operation}}"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Redis 操作延迟",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(redis_operation_duration_seconds_bucket[5m])) by (operation, le))",
+            "legendFormat": "{{operation}}"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "数据库连接池状态",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 20},
+        "targets": [
+          {
+            "expr": "db_pool_size",
+            "legendFormat": "总连接数"
+          },
+          {
+            "expr": "db_pool_available",
+            "legendFormat": "可用连接数"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Celery Worker 状态",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 20},
+        "targets": [
+          {
+            "expr": "celery_worker_online",
+            "legendFormat": "在线 Worker"
+          }
+        ]
+      }
+    ],
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}

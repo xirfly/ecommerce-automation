@@ -1,0 +1,56 @@
+# Prometheus配置文件
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ecommerce-automation'
+    environment: 'production'
+
+# 告警规则文件
+rule_files:
+  - 'alerts.yml'
+
+# 抓取配置
+scrape_configs:
+  # FastAPI应用监控
+  - job_name: 'fastapi'
+    static_configs:
+      - targets: ['localhost:8001', 'localhost:8002', 'localhost:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # MySQL监控（需要安装mysqld_exporter）
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['localhost:9104']
+    scrape_interval: 30s
+
+  # Redis监控（需要安装redis_exporter）
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']
+    scrape_interval: 30s
+
+  # Nginx监控（需要安装nginx-prometheus-exporter）
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['localhost:9113']
+    scrape_interval: 30s
+
+  # Node Exporter（系统指标）
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s
+
+  # Celery监控（需要安装celery-exporter）
+  - job_name: 'celery'
+    static_configs:
+      - targets: ['localhost:9808']
+    scrape_interval: 30s
+
+# AlertManager配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']

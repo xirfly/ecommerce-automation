@@ -1,0 +1,4 @@
+-- 为 sales_data 表添加 updated_at 字段
+ALTER TABLE sales_data
+ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+AFTER created_at;

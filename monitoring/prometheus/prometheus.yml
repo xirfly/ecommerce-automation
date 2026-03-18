@@ -1,0 +1,47 @@
+# Prometheus 配置文件
+global:
+  scrape_interval: 15s  # 每15秒抓取一次指标
+  evaluation_interval: 15s  # 每15秒评估一次告警规则
+  external_labels:
+    cluster: 'ecommerce-automation'
+    environment: 'production'
+
+# 告警管理器配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'localhost:9093'
+
+# 告警规则文件
+rule_files:
+  - 'alert_rules.yml'
+
+# 抓取配置
+scrape_configs:
+  # 抓取 Prometheus 自身的指标
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 抓取应用指标
+  - job_name: 'ecommerce-backend'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # 抓取 Node Exporter 指标（系统资源）
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # 抓取 Redis Exporter 指标
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['localhost:9121']
+
+  # 抓取 MySQL Exporter 指标
+  - job_name: 'mysql-exporter'
+    static_configs:
+      - targets: ['localhost:9104']
